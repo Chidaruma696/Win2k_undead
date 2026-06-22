@@ -195,6 +195,43 @@ if [ ! -f "$BACKUP_DIR/xsettings.bak" ]; then
   ok "Backed up current xsettings/xfwm4 to $BACKUP_DIR"
 fi
 
+# 3a2. Panel: replace ALL existing panels with the single Win2k taskbar.
+#      We write the panel's xfconf XML file directly (the most reliable method
+#      across XFCE versions) while the panel AND xfconfd are stopped, so nothing
+#      can overwrite it. Done FIRST so stopping xfconfd loses no other setting.
+if [ "$INSTALL_PANEL" -eq 1 ]; then
+  say "Building the Win2k taskbar (this replaces any existing panels)"
+  XFCONF_DIR="$HOME/.config/xfce4/xfconf/xfce-perchannel-xml"
+  mkdir -p "$XFCONF_DIR" "$HOME/.config/xfce4/panel/launcher-3"
+  xfce4-panel --quit >/dev/null 2>&1 || true
+  pkill -x xfconfd   >/dev/null 2>&1 || true
+  sleep 1
+  # Keep a backup of the panel layout we are replacing.
+  [ -f "$XFCONF_DIR/xfce4-panel.xml" ] && \
+    cp -f "$XFCONF_DIR/xfce4-panel.xml" "$BACKUP_DIR/xfce4-panel.xml.bak" 2>/dev/null || true
+  cp -f "$ASSETS/panel/xfce4-panel.xml" "$XFCONF_DIR/xfce4-panel.xml"
+  # The "Windows Explorer" quick-launch button (Thunar) used by plugin-3.
+  cat > "$HOME/.config/xfce4/panel/launcher-3/thunar.desktop" <<EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Windows Explorer
+Name[es]=Explorador de Windows
+Comment=Browse the filesystem
+Exec=thunar %F
+Icon=org.xfce.thunar
+Terminal=false
+StartupNotify=true
+EOF
+  # Start a fresh panel; xfconfd auto-relaunches and reads our XML.
+  if [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then
+    nohup xfce4-panel >/dev/null 2>&1 &
+    disown 2>/dev/null || true
+    sleep 1
+  fi
+  ok "Taskbar installed (Start, Explorer, tasklist, tray, clock)"
+fi
+
 # 3b. Theme, icons, cursor, fonts, sounds.
 xfconf-query -c xsettings -p /Net/ThemeName          -s "$GTK_THEME"     --create
 xfconf-query -c xsettings -p /Net/IconThemeName      -s "$ICON_THEME"    --create
@@ -335,98 +372,10 @@ write_link "My Network Places" "Mis sitios de red" "Network" "Red" \
            "network-workgroup" "network:///" "win2k-network.desktop"
 ok "Desktop icons created in: $DESKTOP_DIR"
 
-# 3g. Panel layout: classic Win2k bottom taskbar, built directly via xfconf
-#     (no external tools, version-independent): Start menu + Explorer launcher
-#     + tasklist + notification area (systray) + clock.
-if [ "$INSTALL_PANEL" -eq 1 ]; then
-  say "Building the Win2k taskbar"
-  # Each property is best-effort so one unsupported key can't abort the install.
-  pq() { xfconf-query -c xfce4-panel "$@" 2>/dev/null || true; }
-
-  # A RUNNING panel re-saves its own config over ours on restart, so the layout
-  # never sticks. Stop it first, write the config, then start a fresh panel.
-  panel_running=0; pgrep -x xfce4-panel >/dev/null 2>&1 && panel_running=1
-  xfce4-panel --quit >/dev/null 2>&1 || true
-  sleep 1
-
-  # Back up the current panel config, then clear it for a clean rebuild.
-  pq -lv > "$BACKUP_DIR/xfce4-panel.bak"
-  pq -p /panels  -rR
-  pq -p /plugins -rR
-
-  # One full-width panel locked to the bottom edge (p=8 = bottom).
-  pq -p /panels                         -t int    -s 0           --force-array --create
-  pq -p /panels/panel-0/position        -t string -s 'p=8;x=0;y=0'              --create
-  pq -p /panels/panel-0/position-locked -t bool   -s true                       --create
-  pq -p /panels/panel-0/length          -t uint   -s 100                        --create
-  pq -p /panels/panel-0/size            -t uint   -s 30                         --create
-  pq -p /panels/panel-0/mode            -t uint   -s 0                          --create
-  pq -p /panels/panel-0/background-style -t uint  -s 0                          --create
-  pq -p /panels/panel-0/plugin-ids \
-        -t int -s 1 -t int -s 2 -t int -s 3 -t int -s 4 \
-        -t int -s 5 -t int -s 6 -t int -s 7 -t int -s 8 --force-array --create
-
-  # 1) Start menu (Applications menu)
-  pq -p /plugins/plugin-1                    -t string -s applicationsmenu --create
-  pq -p /plugins/plugin-1/button-title       -t string -s 'Start'          --create
-  pq -p /plugins/plugin-1/button-icon        -t string -s 'start-here'     --create
-  pq -p /plugins/plugin-1/show-button-title  -t bool   -s true             --create
-  pq -p /plugins/plugin-1/show-generic-names -t bool   -s false            --create
-
-  # 2) handle separator
-  pq -p /plugins/plugin-2        -t string -s separator --create
-  pq -p /plugins/plugin-2/style  -t uint   -s 2         --create
-  pq -p /plugins/plugin-2/expand -t bool   -s false     --create
-
-  # 3) Quick-launch: Windows Explorer (Thunar)
-  pq -p /plugins/plugin-3       -t string -s launcher           --create
-  pq -p /plugins/plugin-3/items -t string -s 'thunar.desktop' --force-array --create
-  mkdir -p "$HOME/.config/xfce4/panel/launcher-3"
-  cat > "$HOME/.config/xfce4/panel/launcher-3/thunar.desktop" <<EOF
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Windows Explorer
-Name[es]=Explorador de Windows
-Comment=Browse the filesystem
-Exec=thunar %F
-Icon=org.xfce.thunar
-Terminal=false
-StartupNotify=true
-EOF
-
-  # 4) Show desktop
-  pq -p /plugins/plugin-4 -t string -s showdesktop --create
-
-  # 5) Tasklist
-  pq -p /plugins/plugin-5             -t string -s tasklist --create
-  pq -p /plugins/plugin-5/grouping    -t uint   -s 0        --create
-  pq -p /plugins/plugin-5/show-handle -t bool   -s true     --create
-
-  # 6) Expanding spacer (pushes the tray to the right)
-  pq -p /plugins/plugin-6        -t string -s separator --create
-  pq -p /plugins/plugin-6/style  -t uint   -s 0         --create
-  pq -p /plugins/plugin-6/expand -t bool   -s true      --create
-
-  # 7) Notification area (system tray) - holds nm-applet, volume, etc.
-  pq -p /plugins/plugin-7              -t string -s systray --create
-  pq -p /plugins/plugin-7/show-frame   -t bool   -s true    --create
-  pq -p /plugins/plugin-7/square-icons -t bool   -s false   --create
-
-  # 8) Clock (digital, 12h like Windows)
-  pq -p /plugins/plugin-8                     -t string -s clock       --create
-  pq -p /plugins/plugin-8/mode                -t uint   -s 2           --create
-  pq -p /plugins/plugin-8/digital-time-format -t string -s '%I:%M %p'  --create
-  pq -p /plugins/plugin-8/digital-format      -t string -s '%I:%M %p'  --create
-
-  # Start a fresh panel that loads the config we just wrote.
-  if [ "$panel_running" -eq 1 ] || [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then
-    nohup xfce4-panel >/dev/null 2>&1 &
-    disown 2>/dev/null || true
-  fi
-  ok "Taskbar built (Start menu, Explorer, tasklist, tray, clock)"
-  echo
-fi
+# 3g. (The Win2k taskbar is installed earlier in this section - see
+#      "Building the Win2k taskbar". It is done first, by writing the panel's
+#      xfconf XML directly while the panel + xfconfd are stopped, so it can't be
+#      clobbered and stopping xfconfd loses none of the settings below.)
 
 # 3h. Windows "Command Prompt" terminal look (xfce4-terminal + bash prompt).
 if [ "$INSTALL_CMD" -eq 1 ]; then
