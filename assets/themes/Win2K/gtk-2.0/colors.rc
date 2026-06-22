@@ -1,0 +1,54 @@
+style "standard-default"
+{
+  fg[ACTIVE]        = "#000000"
+  fg[INSENSITIVE]   = "#8b8984"
+  fg[NORMAL]        = "#000000"
+  fg[PRELIGHT]      = "#000000"
+  fg[SELECTED]      = "#ffffff"
+
+  bg[ACTIVE]        = "#d4d0c8"
+  bg[INSENSITIVE]   = "#d4d0c8"
+  bg[NORMAL]        = "#d4d0c8"
+  bg[PRELIGHT]      = "#d4d0c8"
+  bg[SELECTED]      = "#000080"
+
+  base[ACTIVE]      = "#000080"
+  base[NORMAL]      = "#d4d0c8"
+  base[NORMAL]      = "#ffffff"
+  base[PRELIGHT]    = "#000080"
+  base[SELECTED]    = "#000080"
+
+  text[ACTIVE]      = "#ffffff"
+  text[INSENSITIVE] = "#8b8984"
+  text[NORMAL]      = "#000000"
+  text[PRELIGHT]    = "#ffffff"
+  text[SELECTED]    = "#ffffff"
+}
+
+style "standard-menu"
+{
+  bg[PRELIGHT] = "#000080"
+  fg[PRELIGHT] = "#ffffff"
+}
+
+style "standard-menubar-item"
+{
+  bg[PRELIGHT] = "#d4d0c8"
+  fg[PRELIGHT] = "#000000"
+}
+
+style "standard-list"
+{
+   bg[NORMAL] = "#ffffff"
+   bg[PRELIGHT] = "#000000"
+}
+
+style "standard-progressbar" {
+  fg[PRELIGHT] = "#ffffff"
+} 
+
+style "standard-entry"
+{
+  bg[SELECTED] = "#ffffff"
+  bg[SELECTED] = "#000080"
+}
