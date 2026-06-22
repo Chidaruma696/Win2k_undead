@@ -1,15 +1,27 @@
 # Win2k Undead - MS-DOS / Command Prompt style for bash.
-# Sourced from ~/.bashrc. Shows a  C:\path\like\this>  prompt.
-# Based on the classic "Emulate the MS-DOS prompt" trick (L. Szathmary, 2011).
+# Sourced from ~/.bashrc. Turns the bash prompt into a Windows  C:\...>  prompt.
 
-# Convert the current path to a backslashed, drive-letter-ish form.
-win2k_msdos_pwd() {
-    printf '%s' "$PWD" | sed 's:/:\\:g'
+# Build a Windows-looking path from $PWD:
+#   /home/<user>        -> C:\Users\<user>
+#   /home/<user>/foo    -> C:\Users\<user>\foo
+#   anything else (/etc) -> C:\etc
+win2k_cmd_path() {
+    local p="$PWD"
+    case "$p" in
+        "$HOME")    p="/Users/$USER" ;;
+        "$HOME"/*)  p="/Users/$USER/${PWD#"$HOME"/}" ;;
+    esac
+    p="C:$p"
+    # flip slashes to backslashes (pure bash, no sed dependency)
+    printf '%s' "${p//\//\\}"
 }
 
-export PS1='C:$(win2k_msdos_pwd)> '
+# Many distros rebuild the prompt every command via PROMPT_COMMAND, which would
+# overwrite ours. Clear it so our PS1 sticks, then set the cmd-style prompt.
+PROMPT_COMMAND=""
+export PS1='$(win2k_cmd_path)> '
 
-# Print the classic banner once, only for interactive shells.
+# Print the classic banner once per interactive session.
 case $- in
     *i*)
         if [ -z "${WIN2K_BANNER_SHOWN:-}" ]; then
