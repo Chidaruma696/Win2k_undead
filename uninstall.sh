@@ -64,6 +64,9 @@ xfconf-query -c xsettings -p /Gtk/FontName          -s "Sans 10"   2>/dev/null |
 xfconf-query -c xsettings -p /Gtk/MonospaceFontName -s "Monospace 10" 2>/dev/null || true
 xfconf-query -c xfwm4     -p /general/theme         -s "Default"   2>/dev/null || true
 xfconf-query -c xfwm4     -p /general/use_compositing -s true      2>/dev/null || true
+# Reset the title-bar font too: it pointed at Tahoma, which we are removing, so
+# leaving it would make window titles render as illegible boxes (tofu).
+xfconf-query -c xfwm4     -p /general/title_font    -s "Sans Bold 9" 2>/dev/null || true
 ok "Appearance reset (you can pick any theme in Settings > Appearance)"
 
 # 5) Command Prompt terminal look -------------------------------------------
