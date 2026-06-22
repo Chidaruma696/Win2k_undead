@@ -76,15 +76,22 @@ if [ -f "$BASHRC" ] && grep -qF "$BASHRC_BEGIN" "$BASHRC"; then
 fi
 rm -f "$CMD_PROMPT_DST" "$HOME/.config/xfce4/terminal/terminalrc"
 
-# 6) Panel: reset to the XFCE default layout --------------------------------
-say "Resetting the panel to XFCE defaults"
+# 6) Panel: restore the stock XFCE default layout ---------------------------
+say "Restoring the default XFCE panel"
+xfce4-panel --quit >/dev/null 2>&1 || true
+sleep 1
 xfconf-query -c xfce4-panel -p /panels  -rR 2>/dev/null || true
 xfconf-query -c xfce4-panel -p /plugins -rR 2>/dev/null || true
 rm -rf "$HOME/.config/xfce4/panel/launcher-3"
-if have xfce4-panel && pgrep -x xfce4-panel >/dev/null 2>&1; then
-  (xfce4-panel -r >/dev/null 2>&1 &) || true
+# Drop the cached panel config so XFCE regenerates its built-in default layout.
+rm -f "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml"
+pkill -x xfconfd >/dev/null 2>&1 || true
+sleep 1
+if have xfce4-panel && [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then
+  nohup xfce4-panel >/dev/null 2>&1 &
+  disown 2>/dev/null || true
 fi
-ok "Panel reset (a default panel is recreated on next start)"
+ok "Default panel restored"
 
 if [ -d "$BACKUP_DIR" ]; then
   warn "Your pre-install settings dump is kept at: $BACKUP_DIR"
