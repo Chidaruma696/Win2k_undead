@@ -191,6 +191,12 @@ ok "Wallpapers installed to /usr/share/backgrounds"
 have gtk-update-icon-cache && sudo gtk-update-icon-cache -f "/usr/share/icons/$ICON_THEME" >/dev/null 2>&1 || true
 have fc-cache && sudo fc-cache -f >/dev/null 2>&1 || true
 ok "Icon and font caches refreshed"
+# The icon fallback points at Adwaita; without it, tray/network/volume icons
+# stay blank. Warn loudly if it is missing.
+if [ ! -d /usr/share/icons/Adwaita ]; then
+  warn "adwaita-icon-theme is NOT installed - tray/volume/network icons will stay"
+  warn "blank squares. Install it:  sudo pacman -S adwaita-icon-theme"
+fi
 echo
 
 # ---------------------------------------------------------------------------
@@ -416,6 +422,26 @@ if [ "$INSTALL_PANEL" -eq 1 ] && have nm-applet \
   nohup nm-applet >/dev/null 2>&1 &
   disown 2>/dev/null || true
   ok "Started the network tray applet (nm-applet)"
+  echo
+fi
+
+# 3j. Apply everything LIVE. Rebuilding the panel restarts xfconfd, which can
+#     leave xfsettingsd (the daemon that applies theme/icons/cursor/font) showing
+#     the old look until the next login. Replace it so the theme, Tahoma font and
+#     the fixed icon fallback all take effect right now, without logging out.
+if [ -n "${DISPLAY:-}" ]; then
+  if have xfsettingsd; then
+    nohup xfsettingsd --replace >/dev/null 2>&1 &
+    disown 2>/dev/null || true
+    sleep 1
+  fi
+  # Toggle the icon theme so running apps re-read the now-corrected fallback
+  # chain (Win2k -> Adwaita -> hicolor) and stop drawing missing icons as boxes.
+  xfconf-query -c xsettings -p /Net/IconThemeName -s "hicolor"     2>/dev/null || true
+  sleep 1
+  xfconf-query -c xsettings -p /Net/IconThemeName -s "$ICON_THEME" 2>/dev/null || true
+  have xfdesktop && (xfdesktop --reload >/dev/null 2>&1 &) || true
+  ok "Applied theme, font and icons live (no logout needed)"
   echo
 fi
 
