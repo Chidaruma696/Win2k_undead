@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Type=Link
+Name=Recycle Bin
+Name[el]=Κάδος Ανακύκλωσης
+Comment=
+Icon=user-trash
+URL=trash:///
