@@ -120,11 +120,16 @@ echo
 # ---------------------------------------------------------------------------
 if [ "$INSTALL_DEPS" -eq 1 ]; then
   say "Step 1/3 - optional dependencies (pacman)"
-  # xfce4-pulseaudio-plugin powers the taskbar volume icon; without it the panel
-  # would show a "plugin not found" placeholder box. --needed = no-op if present.
-  deps=(xfce4-pulseaudio-plugin)
+  # xfce4-pulseaudio-plugin = the taskbar volume icon (else a "plugin not found"
+  # box); adwaita-icon-theme = fallback icons so tray/volume/network aren't blank.
+  deps=(xfce4-pulseaudio-plugin adwaita-icon-theme)
   have fc-cache               || deps+=(fontconfig)
   have gtk-update-icon-cache  || deps+=(gtk-update-icon-cache)
+  # Network tray icon: add the applet only if NetworkManager is actually in use,
+  # so we never pull NetworkManager onto a system that uses something else.
+  if command -v nmcli >/dev/null 2>&1 || systemctl is-active --quiet NetworkManager 2>/dev/null; then
+    have nm-applet || deps+=(network-manager-applet)
+  fi
   if [ "${#deps[@]}" -gt 0 ]; then
     say "Installing: ${deps[*]}  (you may be prompted for your password)"
     if sudo pacman -S --needed --noconfirm "${deps[@]}"; then
@@ -158,7 +163,12 @@ ok "GTK/xfwm theme: $GTK_THEME, $GTK_THEME_NL"
 sudo rm -rf "/usr/share/icons/$ICON_THEME" "/usr/share/icons/$CURSOR_THEME"
 sudo tar -xzf "$ASSETS/icons/Win2k.tar.gz"        -C /usr/share/icons/
 sudo tar -xzf "$ASSETS/icons/Win2K_Cursor.tar.gz" -C /usr/share/icons/
-ok "Icon theme: $ICON_THEME   Cursor theme: $CURSOR_THEME"
+# The bundled index.theme inherits "hicolor #,WhiteSur,Tela-purple,Numix" - the
+# "hicolor #" is malformed and the rest are themes that don't exist here, so any
+# icon Win2k lacks (network, volume, tray apps...) renders as a broken square.
+# Point the fallback at Adwaita + hicolor, which exist and cover those icons.
+sudo sed -i 's/^Inherits=.*/Inherits=Adwaita,hicolor/' "/usr/share/icons/$ICON_THEME/index.theme"
+ok "Icon theme: $ICON_THEME (fallback: Adwaita, hicolor)   Cursor theme: $CURSOR_THEME"
 
 # 2c. Fonts (all bundled Windows fonts -> Tahoma is the UI font)
 sudo rm -rf /usr/share/fonts/Win2k
@@ -396,6 +406,16 @@ if [ "$INSTALL_CMD" -eq 1 ]; then
     } >> "$BASHRC"
   fi
   ok "Command Prompt look applied (terminal + bash prompt; use --no-cmd to skip)"
+  echo
+fi
+
+# 3i. Network tray icon: start the NetworkManager applet so it appears now (and,
+#     since its package ships an autostart entry, on every future login too).
+if [ "$INSTALL_PANEL" -eq 1 ] && have nm-applet \
+   && [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ] && ! pgrep -x nm-applet >/dev/null 2>&1; then
+  nohup nm-applet >/dev/null 2>&1 &
+  disown 2>/dev/null || true
+  ok "Started the network tray applet (nm-applet)"
   echo
 fi
 
