@@ -250,46 +250,63 @@ EOF
   ok "Taskbar installed (Start, Explorer, tasklist, tray, clock)"
 fi
 
-# 3b. Theme, icons, cursor, fonts, sounds.
-xfconf-query -c xsettings -p /Net/ThemeName          -s "$GTK_THEME"     --create
-xfconf-query -c xsettings -p /Net/IconThemeName      -s "$ICON_THEME"    --create
-xfconf-query -c xsettings -p /Net/FallbackIconTheme  -s "Adwaita"        --create
-xfconf-query -c xsettings -p /Gtk/CursorThemeName    -s "$CURSOR_THEME"  --create
-xfconf-query -c xsettings -p /Gtk/FontName           -s "$UI_FONT"       --create
-xfconf-query -c xsettings -p /Gtk/MonospaceFontName  -s "$UI_FONT"       --create
-xfconf-query -c xsettings -p /Net/SoundThemeName     -s "$SOUND_THEME"   --create
-xfconf-query -c xsettings -p /Net/EnableEventSounds  -s true             --create
-xfconf-query -c xfwm4     -p /general/theme          -s "$GTK_THEME"     --create
-xfconf-query -c xfwm4     -p /general/title_font     -s "$WM_TITLE_FONT" --create
+# 3b. Theme, icons, cursor, fonts, sounds.  (-t is REQUIRED for bool/int props,
+#     otherwise xfconf stores them as strings and the daemons ignore them.)
+xfconf-query -c xsettings -p /Net/ThemeName          -t string -s "$GTK_THEME"     --create
+xfconf-query -c xsettings -p /Net/IconThemeName      -t string -s "$ICON_THEME"    --create
+xfconf-query -c xsettings -p /Net/FallbackIconTheme  -t string -s "Adwaita"        --create
+xfconf-query -c xsettings -p /Gtk/CursorThemeName    -t string -s "$CURSOR_THEME"  --create
+xfconf-query -c xsettings -p /Gtk/FontName           -t string -s "$UI_FONT"       --create
+xfconf-query -c xsettings -p /Gtk/MonospaceFontName  -t string -s "$UI_FONT"       --create
+xfconf-query -c xsettings -p /Net/SoundThemeName     -t string -s "$SOUND_THEME"   --create
+xfconf-query -c xsettings -p /Net/EnableEventSounds  -t bool   -s true             --create
+xfconf-query -c xfwm4     -p /general/theme          -t string -s "$GTK_THEME"     --create
+xfconf-query -c xfwm4     -p /general/title_font     -t string -s "$WM_TITLE_FONT" --create
 # Win2k look = no transparency / no compositing.
-xfconf-query -c xfwm4     -p /general/use_compositing -s false           --create
+xfconf-query -c xfwm4     -p /general/use_compositing -t bool  -s false            --create
 ok "Theme, icons, cursor, font ($UI_FONT) and sounds applied"
 
-# 3c. Desktop icon view: show launcher icons, hide the default XFCE ones.
-xfconf-query -c xfce4-desktop -p /desktop-icons/style                  -s 2     --create
-xfconf-query -c xfce4-desktop -p /desktop-icons/file-icons/show-home       -s false --create
-xfconf-query -c xfce4-desktop -p /desktop-icons/file-icons/show-filesystem -s false --create
-xfconf-query -c xfce4-desktop -p /desktop-icons/file-icons/show-removable  -s false --create
-xfconf-query -c xfce4-desktop -p /desktop-icons/file-icons/show-trash      -s false --create
+# 3c. Desktop icon view: show launcher icons (style 2), hide XFCE's default
+#     Home / Filesystem / Trash / removable icons so only our Win2k ones show.
+# Reset first: an earlier build created these without -t (as strings), and
+# xfconf won't change a property's type in place, so recreate them cleanly.
+for _k in style file-icons/show-home file-icons/show-filesystem \
+          file-icons/show-removable file-icons/show-trash; do
+  xfconf-query -c xfce4-desktop -p "/desktop-icons/$_k" -r 2>/dev/null || true
+done
+xfconf-query -c xfce4-desktop -p /desktop-icons/style                      -t int  -s 2     --create
+xfconf-query -c xfce4-desktop -p /desktop-icons/file-icons/show-home       -t bool -s false --create
+xfconf-query -c xfce4-desktop -p /desktop-icons/file-icons/show-filesystem -t bool -s false --create
+xfconf-query -c xfce4-desktop -p /desktop-icons/file-icons/show-removable  -t bool -s false --create
+xfconf-query -c xfce4-desktop -p /desktop-icons/file-icons/show-trash      -t bool -s false --create
 
 # 3d. Wallpaper. Must also set image-style: with style 0 (None) the desktop
 #     shows a solid colour (black), no matter what last-image points to.
 WALL_PATH="/usr/share/backgrounds/$WALLPAPER"
 if [ -f "$WALL_PATH" ]; then
   applied=0
+  # 1) Set every backdrop image property that already exists (real monitor names).
   while IFS= read -r p; do
     [ -n "$p" ] || continue
     base="${p%/last-image}"
-    xfconf-query -c xfce4-desktop -p "$p"               -s "$WALL_PATH" 2>/dev/null || true
-    xfconf-query -c xfce4-desktop -p "$base/image-style" -t int  -s 5    --create 2>/dev/null || true
-    xfconf-query -c xfce4-desktop -p "$base/image-show"  -t bool -s true --create 2>/dev/null || true
-    applied=1
-  done < <(xfconf-query -c xfce4-desktop -l 2>/dev/null | grep '/last-image$' || true)
-  if [ "$applied" -eq 0 ]; then
-    # No backdrop props yet: create them for the first screen/monitor/workspace.
-    base="/backdrop/screen0/monitor0/workspace0"
     xfconf-query -c xfce4-desktop -p "$base/last-image"  -t string -s "$WALL_PATH" --create 2>/dev/null || true
     xfconf-query -c xfce4-desktop -p "$base/image-style" -t int    -s 5            --create 2>/dev/null || true
+    xfconf-query -c xfce4-desktop -p "$base/image-show"  -t bool   -s true         --create 2>/dev/null || true
+    applied=1
+  done < <(xfconf-query -c xfce4-desktop -l 2>/dev/null | grep '/last-image$' || true)
+  # 2) If none existed yet, create them for the actual connected monitor(s).
+  if [ "$applied" -eq 0 ]; then
+    mons="monitor0"
+    if have xrandr; then
+      m="$(xrandr 2>/dev/null | awk '/ connected/{print $1}')"
+      [ -n "$m" ] && mons="$m"
+    fi
+    for mon in $mons; do
+      for base in "/backdrop/screen0/$mon/workspace0" "/backdrop/screen0/$mon"; do
+        xfconf-query -c xfce4-desktop -p "$base/last-image"  -t string -s "$WALL_PATH" --create 2>/dev/null || true
+        xfconf-query -c xfce4-desktop -p "$base/image-style" -t int    -s 5            --create 2>/dev/null || true
+      done
+    done
   fi
   have xfdesktop && (xfdesktop --reload >/dev/null 2>&1 &) || true
   ok "Wallpaper set: $WALLPAPER (zoomed to fill)"
