@@ -217,20 +217,27 @@ xfconf-query -c xfce4-desktop -p /desktop-icons/file-icons/show-filesystem -s fa
 xfconf-query -c xfce4-desktop -p /desktop-icons/file-icons/show-removable  -s false --create
 xfconf-query -c xfce4-desktop -p /desktop-icons/file-icons/show-trash      -s false --create
 
-# 3d. Wallpaper on every connected monitor/workspace.
+# 3d. Wallpaper. Must also set image-style: with style 0 (None) the desktop
+#     shows a solid colour (black), no matter what last-image points to.
 WALL_PATH="/usr/share/backgrounds/$WALLPAPER"
 if [ -f "$WALL_PATH" ]; then
-  mapfile -t imgprops < <(xfconf-query -c xfce4-desktop -l 2>/dev/null | grep '/last-image$' || true)
-  if [ "${#imgprops[@]}" -gt 0 ]; then
-    for p in "${imgprops[@]}"; do
-      xfconf-query -c xfce4-desktop -p "$p" -s "$WALL_PATH" 2>/dev/null || true
-    done
-  else
-    # No backdrop props yet (fresh session): create a sensible default.
-    xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/workspace0/last-image \
-                 -s "$WALL_PATH" --create 2>/dev/null || true
+  applied=0
+  while IFS= read -r p; do
+    [ -n "$p" ] || continue
+    base="${p%/last-image}"
+    xfconf-query -c xfce4-desktop -p "$p"               -s "$WALL_PATH" 2>/dev/null || true
+    xfconf-query -c xfce4-desktop -p "$base/image-style" -t int  -s 5    --create 2>/dev/null || true
+    xfconf-query -c xfce4-desktop -p "$base/image-show"  -t bool -s true --create 2>/dev/null || true
+    applied=1
+  done < <(xfconf-query -c xfce4-desktop -l 2>/dev/null | grep '/last-image$' || true)
+  if [ "$applied" -eq 0 ]; then
+    # No backdrop props yet: create them for the first screen/monitor/workspace.
+    base="/backdrop/screen0/monitor0/workspace0"
+    xfconf-query -c xfce4-desktop -p "$base/last-image"  -t string -s "$WALL_PATH" --create 2>/dev/null || true
+    xfconf-query -c xfce4-desktop -p "$base/image-style" -t int    -s 5            --create 2>/dev/null || true
   fi
-  ok "Wallpaper set: $WALLPAPER"
+  have xfdesktop && (xfdesktop --reload >/dev/null 2>&1 &) || true
+  ok "Wallpaper set: $WALLPAPER (zoomed to fill)"
 fi
 
 # 3e. XFCE 4.18/4.20 fix: pin desktop-icon label colours via the USER gtk.css.
@@ -266,6 +273,12 @@ XfdesktopIconView.view rubberband,
 .rubberband {
     border: 1px dotted #ff7f7f;
     background-color: rgba(0,0,128,0.25);
+}
+/* Some client-side-decorated windows/dialogs draw a hard BLACK 1px outline on
+   GTK 3.24+/4.20; replace it with the classic Win2k grey (flat, no shadow). */
+decoration {
+    border-radius: 0;
+    box-shadow: 0 0 0 1px #808080;
 }
 /* <<< win2k_undead xfdesktop fix */
 EOF
@@ -327,12 +340,19 @@ ok "Desktop icons created in: $DESKTOP_DIR"
 #     + tasklist + notification area (systray) + clock.
 if [ "$INSTALL_PANEL" -eq 1 ]; then
   say "Building the Win2k taskbar"
-  pq() { xfconf-query -c xfce4-panel "$@"; }
+  # Each property is best-effort so one unsupported key can't abort the install.
+  pq() { xfconf-query -c xfce4-panel "$@" 2>/dev/null || true; }
 
-  # Back up the current panel config (best-effort), then clear it for a clean rebuild.
-  pq -lv > "$BACKUP_DIR/xfce4-panel.bak" 2>/dev/null || true
-  pq -p /panels  -rR 2>/dev/null || true
-  pq -p /plugins -rR 2>/dev/null || true
+  # A RUNNING panel re-saves its own config over ours on restart, so the layout
+  # never sticks. Stop it first, write the config, then start a fresh panel.
+  panel_running=0; pgrep -x xfce4-panel >/dev/null 2>&1 && panel_running=1
+  xfce4-panel --quit >/dev/null 2>&1 || true
+  sleep 1
+
+  # Back up the current panel config, then clear it for a clean rebuild.
+  pq -lv > "$BACKUP_DIR/xfce4-panel.bak"
+  pq -p /panels  -rR
+  pq -p /plugins -rR
 
   # One full-width panel locked to the bottom edge (p=8 = bottom).
   pq -p /panels                         -t int    -s 0           --force-array --create
@@ -399,9 +419,10 @@ EOF
   pq -p /plugins/plugin-8/digital-time-format -t string -s '%I:%M %p'  --create
   pq -p /plugins/plugin-8/digital-format      -t string -s '%I:%M %p'  --create
 
-  # Apply now if the panel is running; otherwise it loads on next login.
-  if pgrep -x xfce4-panel >/dev/null 2>&1; then
-    (xfce4-panel -r >/dev/null 2>&1 &) || true
+  # Start a fresh panel that loads the config we just wrote.
+  if [ "$panel_running" -eq 1 ] || [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then
+    nohup xfce4-panel >/dev/null 2>&1 &
+    disown 2>/dev/null || true
   fi
   ok "Taskbar built (Start menu, Explorer, tasklist, tray, clock)"
   echo
