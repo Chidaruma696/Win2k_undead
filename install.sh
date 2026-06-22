@@ -120,7 +120,9 @@ echo
 # ---------------------------------------------------------------------------
 if [ "$INSTALL_DEPS" -eq 1 ]; then
   say "Step 1/3 - optional dependencies (pacman)"
-  deps=()
+  # xfce4-pulseaudio-plugin powers the taskbar volume icon; without it the panel
+  # would show a "plugin not found" placeholder box. --needed = no-op if present.
+  deps=(xfce4-pulseaudio-plugin)
   have fc-cache               || deps+=(fontconfig)
   have gtk-update-icon-cache  || deps+=(gtk-update-icon-cache)
   if [ "${#deps[@]}" -gt 0 ]; then
