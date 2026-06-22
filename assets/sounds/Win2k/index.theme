@@ -1,0 +1,7 @@
+[Sound Theme]
+Name=Win2k
+Directories=stereo
+
+[stereo]
+OutputProfile=stereo
+
