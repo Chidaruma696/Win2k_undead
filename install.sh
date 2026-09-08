@@ -1,17 +1,20 @@
 #!/usr/bin/env bash
 #
-# Win2k Undead  ::  Windows 2000 look & feel for XFCE on Arch Linux
+# Win2k Undead  ::  Windows 2000 look & feel for XFCE, on any distro
 # ----------------------------------------------------------------------------
-# Fork of the "Win2k" total conversion, rebuilt for Arch Linux + XFCE 4.18/4.20.
+# Fork of the "Win2k" total conversion, rebuilt for XFCE 4.18/4.20 on Arch,
+# Debian, Ubuntu/Mint, Fedora, Void and openSUSE.
 #
 # Design goals (why this is different from the original Debian project):
 #   * APPEARANCE ONLY  - themes, icons, cursors, fonts, sounds, wallpapers,
 #                        panel layout and desktop icons. No fake utilities,
 #                        no bundled Wine/IE/WMP, no system binaries.
 #   * UPDATE-SAFE      - does NOT touch /usr/lib/os-release, /etc/lsb-release,
-#                        does NOT purge or replace any pacman-managed package.
-#                        A `pacman -Syu` can never break this install.
-#   * ARCH-NATIVE      - no dpkg/apt/.deb. Optional deps come from pacman.
+#                        does NOT purge or replace any distro package.
+#                        A system upgrade can never break this install.
+#   * DISTRO-NATIVE    - no bundled packages. The few optional deps come from
+#                        YOUR package manager (pacman, apt, dnf, xbps, zypper),
+#                        detected from /etc/os-release.
 #   * BILINGUAL        - desktop entries carry English + Spanish (Name[es]).
 #                        Your locale decides which one shows automatically.
 #
@@ -69,7 +72,7 @@ Win2k Undead installer
 Usage: ./install.sh [options]
 
 Options:
-  --no-deps      Skip the optional pacman dependency step
+  --no-deps      Skip the optional package-manager dependency step
   --no-panel     Do not build/replace the XFCE panel layout
   --no-cmd       Do not apply the Windows "Command Prompt" terminal look
   -h, --help     Show this help
@@ -98,13 +101,69 @@ done
 have() { command -v "$1" >/dev/null 2>&1; }
 
 if ! have xfconf-query; then
-  die "xfconf-query not found. This installs an XFCE theme; install XFCE first (e.g. 'sudo pacman -S --needed xfce4')."
+  die "xfconf-query not found. This installs an XFCE theme; install XFCE first (the 'xfce4' group/package of your distro)."
 fi
 
-if ! have pacman; then
-  warn "pacman not found - this is tuned for Arch but assets will still install. Skipping dependency step."
+# ---------------------------------------------------------------------------
+# Distro detection. Only the optional-dependency step cares: everything else
+# is plain files under /usr/share plus xfconf, identical on every distro.
+# ---------------------------------------------------------------------------
+PKG_MGR=""      # pacman | apt | dnf | xbps | zypper
+DISTRO_ID="unknown"
+if [ -r /etc/os-release ]; then
+  # shellcheck disable=SC1091
+  . /etc/os-release
+  DISTRO_ID="${ID:-unknown}"
+  case " ${ID:-} ${ID_LIKE:-} " in
+    *" arch "*|*" manjaro "*|*" endeavouros "*|*" artix "*|*" cachyos "*) PKG_MGR="pacman" ;;
+    *" debian "*|*" ubuntu "*|*" linuxmint "*|*" pop "*|*" elementary "*|*" zorin "*|*" kali "*|*" raspbian "*) PKG_MGR="apt" ;;
+    *" fedora "*|*" rhel "*|*" centos "*|*" nobara "*|*" rocky "*|*" almalinux "*) PKG_MGR="dnf" ;;
+    *" void "*) PKG_MGR="xbps" ;;
+    *" opensuse "*|*" suse "*|*" opensuse-tumbleweed "*|*" opensuse-leap "*) PKG_MGR="zypper" ;;
+  esac
+fi
+# Fall back to whatever package manager is actually on the PATH.
+if [ -z "$PKG_MGR" ]; then
+  for m in pacman apt-get dnf xbps-install zypper; do
+    if have "$m"; then PKG_MGR="${m%%-*}"; break; fi
+  done
+fi
+if [ -z "$PKG_MGR" ]; then
+  warn "Could not detect a supported package manager (pacman/apt/dnf/xbps/zypper)."
+  warn "Assets will still install; skipping the optional dependency step."
   INSTALL_DEPS=0
 fi
+
+# Package names differ per distro; the intent is the same everywhere.
+pkg_name() {  # <role> -> package name for $PKG_MGR
+  case "$PKG_MGR:$1" in
+    *:volume-plugin)  case "$PKG_MGR" in zypper) echo xfce4-panel-plugin-pulseaudio ;; *) echo xfce4-pulseaudio-plugin ;; esac ;;
+    *:adwaita)        echo adwaita-icon-theme ;;
+    *:fontconfig)     echo fontconfig ;;
+    *:icon-cache)     case "$PKG_MGR" in zypper) echo gtk3-tools ;; *) echo gtk-update-icon-cache ;; esac ;;
+    *:nm-applet)      case "$PKG_MGR" in apt) echo network-manager-gnome ;; zypper) echo NetworkManager-applet ;; *) echo network-manager-applet ;; esac ;;
+  esac
+}
+pkg_install() {  # installs the given packages with the detected manager
+  case "$PKG_MGR" in
+    pacman) sudo pacman -S --needed --noconfirm "$@" ;;
+    apt)    sudo apt-get install -y "$@" ;;
+    dnf)    sudo dnf install -y "$@" ;;
+    xbps)   sudo xbps-install -y "$@" ;;
+    zypper) sudo zypper --non-interactive install "$@" ;;
+    *)      return 1 ;;
+  esac
+}
+pkg_hint() {  # one-line install command for the notes
+  case "$PKG_MGR" in
+    pacman) echo "sudo pacman -S $*" ;;
+    apt)    echo "sudo apt install $*" ;;
+    dnf)    echo "sudo dnf install $*" ;;
+    xbps)   echo "sudo xbps-install $*" ;;
+    zypper) echo "sudo zypper install $*" ;;
+    *)      echo "install with your package manager: $*" ;;
+  esac
+}
 
 say "Win2k Undead :: installing the Windows 2000 look for XFCE"
 echo
@@ -119,23 +178,24 @@ echo
 #    The panel is built with xfconf-query directly, so no extra tools needed.
 # ---------------------------------------------------------------------------
 if [ "$INSTALL_DEPS" -eq 1 ]; then
-  say "Step 1/3 - optional dependencies (pacman)"
-  # xfce4-pulseaudio-plugin = the taskbar volume icon (else a "plugin not found"
-  # box); adwaita-icon-theme = fallback icons so tray/volume/network aren't blank.
-  deps=(xfce4-pulseaudio-plugin adwaita-icon-theme)
-  have fc-cache               || deps+=(fontconfig)
-  have gtk-update-icon-cache  || deps+=(gtk-update-icon-cache)
+  say "Step 1/3 - optional dependencies ($PKG_MGR, detected from $DISTRO_ID)"
+  # volume plugin = the taskbar volume icon (else a "plugin not found" box);
+  # adwaita = fallback icons so tray/volume/network aren't blank squares.
+  deps=("$(pkg_name volume-plugin)" "$(pkg_name adwaita)")
+  have fc-cache               || deps+=("$(pkg_name fontconfig)")
+  have gtk-update-icon-cache  || deps+=("$(pkg_name icon-cache)")
   # Network tray icon: add the applet only if NetworkManager is actually in use,
-  # so we never pull NetworkManager onto a system that uses something else.
-  if command -v nmcli >/dev/null 2>&1 || systemctl is-active --quiet NetworkManager 2>/dev/null; then
-    have nm-applet || deps+=(network-manager-applet)
+  # so we never pull NetworkManager onto a system that uses something else
+  # (checked by process, not by systemctl: Void runs runit, not systemd).
+  if have nmcli || pgrep -x NetworkManager >/dev/null 2>&1; then
+    have nm-applet || deps+=("$(pkg_name nm-applet)")
   fi
   if [ "${#deps[@]}" -gt 0 ]; then
     say "Installing: ${deps[*]}  (you may be prompted for your password)"
-    if sudo pacman -S --needed --noconfirm "${deps[@]}"; then
+    if pkg_install "${deps[@]}"; then
       ok "Dependencies installed"
     else
-      warn "Could not install ${deps[*]} - continuing (only cache refresh is affected)."
+      warn "Could not install ${deps[*]} - continuing (only the volume icon and icon fallback are affected)."
     fi
   else
     ok "All dependencies already present - nothing to install"
@@ -195,7 +255,7 @@ ok "Icon and font caches refreshed"
 # stay blank. Warn loudly if it is missing.
 if [ ! -d /usr/share/icons/Adwaita ]; then
   warn "adwaita-icon-theme is NOT installed - tray/volume/network icons will stay"
-  warn "blank squares. Install it:  sudo pacman -S adwaita-icon-theme"
+  warn "blank squares. Install it:  $(pkg_hint "$(pkg_name adwaita)")"
 fi
 echo
 
@@ -479,8 +539,8 @@ cat <<EOF
   * Tray icons (network, volume...) use whatever the Win2k icon theme provides;
     install nm-applet/your tray apps and they will sit in the taskbar tray.
 
-  Nothing here replaced a pacman package or edited os-release, so a normal
-  'sudo pacman -Syu' will NOT break this theme.
+  Nothing here replaced a distro package or edited os-release, so a normal
+  system upgrade will NOT break this theme.
 
   To revert everything:  ./uninstall.sh
 EOF
