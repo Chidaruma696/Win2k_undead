@@ -1,54 +1,186 @@
-<h1 align="center">Win2k Undead</h1>
-<p align="center"><b>Windows 2000 look &amp; feel for XFCE — resurrected for Arch Linux.</b></p>
-<p align="center"><img src="logo.png" alt="Win2k Undead"/></p>
+<div align="center">
+  <br/>
+  <img src="logo.png" width="220" alt="Win2k Undead" />
 
-A modernized, **appearance-only** fork of the original `Win2k` total conversion,
-rebuilt to run on **Arch Linux** and **XFCE 4.18 / 4.20** — with no Debian
-baggage and nothing that a `pacman -Syu` can break.
+# Win2k Undead
 
-> The original theming is a Windows 2000 reskin of **Chicago95** (by Grassmunk
-> et al.). This fork keeps those visual assets and replaces the Debian-only
-> installer with a clean, update-safe, Arch-native one.
+**復活 · El escritorio de Windows 2000, resucitado para XFCE en cualquier distro.**
 
-### Screenshots
-<p align="center">
-<img src="d12.png" alt="Desktop"/>
-<img src="d22.png" alt="Desktop"/>
-</p>
+<br/>
+
+![XFCE 4.18 / 4.20](https://img.shields.io/badge/xfce-4.18%20%2F%204.20-2284f2?style=for-the-badge&logo=xfce&logoColor=white)
+![Arch](https://img.shields.io/badge/arch-1793d1?style=for-the-badge&logo=archlinux&logoColor=white)
+![Debian](https://img.shields.io/badge/debian-a81d33?style=for-the-badge&logo=debian&logoColor=white)
+![Ubuntu / Mint](https://img.shields.io/badge/ubuntu%20%2F%20mint-e95420?style=for-the-badge&logo=ubuntu&logoColor=white)
+![Fedora](https://img.shields.io/badge/fedora-51a2da?style=for-the-badge&logo=fedora&logoColor=white)
+![Void](https://img.shields.io/badge/void-478061?style=for-the-badge&logo=voidlinux&logoColor=white)
+![Licencia GPL-3.0](https://img.shields.io/badge/licencia-GPL--3.0-1b150d?style=for-the-badge)
+
+<br/>
+
+*Solo apariencia · sin paquetes empaquetados · sobrevive a las actualizaciones · se desinstala limpio*
+
+<br/>
+
+<img src="d12.png" width="720" alt="Escritorio Win2k Undead" />
+<br/><br/>
+<img src="d22.png" width="720" alt="Escritorio Win2k Undead con ventanas" />
+
+</div>
 
 ---
 
-## 🇬🇧 English
+> [!NOTE]
+> Este es un fork del tema **Win2k** para XFCE, que a su vez es una reinterpretación de **Chicago95**. El arte es de ellos. Lo que cambia aquí es el instalador: uno solo, nativo de cada distro, que no toca nada del sistema y que se puede revertir con un comando.
 
-### What changed vs. the original
+<br/>
 
-| Original `Win2k` (Debian/Mint) | Win2k Undead (Arch) |
+## 🖥️ Qué es
+
+Win2k Undead convierte un escritorio XFCE en un Windows 2000 creíble: tema de ventanas GTK2/GTK3/xfwm4, iconos, cursores, fuentes de Windows con Tahoma como fuente de interfaz, sonidos de eventos, fondos de pantalla, la barra de tareas clásica con menú Inicio, los iconos de escritorio de siempre y hasta una terminal que parece el `cmd`.
+
+El proyecto original hacía todo eso a base de paquetes `.deb` parcheados, purgando paquetes de Mint y sobrescribiendo `os-release`; solo funcionaba en Debian y Mint con XFCE 4.12 a 4.16. Este fork tira todo eso y se queda con lo que importa:
+
+| 📦 `Win2k` original | 🧟 Win2k Undead |
 | --- | --- |
-| `dpkg`/`apt` + ~1.8 GB of bundled `.deb` packages | **None** — uses your Arch packages; ships only visual assets |
-| Overwrote `/usr/lib/os-release` & `/etc/lsb-release` | **Never touched** — survives system updates |
-| Purged Mint theme packages, installed patched system `.deb`s | **Nothing purged or replaced** |
-| Targeted XFCE 4.12–4.16 (*"4.18 Not Supported"*) | **Supports XFCE 4.18 / 4.20** (the desktop-icon rendering change is handled) |
-| Fake `cmd`/`taskmgr`, Wine, IE, WMP10, games, renames | **Dropped** — appearance only |
-| English / Greek | **English / Spanish** (locale-aware desktop icons) |
+| `dpkg`/`apt` con 1,8 GB de `.deb` incluidos | **Ninguno**. Solo recursos visuales; las pocas dependencias opcionales salen de **tu** gestor de paquetes |
+| Sobrescribía `/usr/lib/os-release` y `/etc/lsb-release` | **No se tocan.** Una actualización del sistema no rompe nada |
+| Purgaba paquetes de Mint e instalaba `.deb` de sistema | **No purga ni reemplaza nada** |
+| Debian y Mint, XFCE 4.12 a 4.16 ("4.18 no soportado") | **Arch, Debian, Ubuntu, Mint, Fedora, Void y openSUSE** con XFCE 4.18 y 4.20 |
+| `cmd`, `taskmgr` falsos, Wine, IE, WMP10, juegos | **Fuera.** Solo apariencia |
+| Inglés y griego | **Inglés y español**, según el idioma de tu sesión |
 
-### What you get
+<br/>
 
-- GTK3 + GTK2 + xfwm4 window theme **`Win2K`** (and **`Win2K_NoLabel`** taskbar variant)
-- **`Win2k`** icon theme and **`Win2K_Cursor`** cursor theme
-- Windows fonts (UI font = **Tahoma 9**)
-- **`Win2k`** event sound theme
-- Windows 2000 wallpapers
-- Classic **Start menu + taskbar** panel layout
-- Desktop icons: *My Computer, My Documents, Recycle Bin, Local Disk (C:),
-  Control Panel, My Network Places* — wired to native targets (Thunar, trash, etc.)
+## 🎁 Qué incluye
 
-### Requirements
+- 🪟 Tema de ventanas **`Win2K`** para GTK3, GTK2 y xfwm4, más la variante **`Win2K_NoLabel`** para la barra de tareas
+- 🖱️ Tema de iconos **`Win2k`** y de cursores **`Win2K_Cursor`**, con Adwaita como respaldo para que nada quede en blanco
+- 🔤 Las fuentes de Windows: **Tahoma 9** en la interfaz, Tahoma Bold 8 en los títulos, PxPlus IBM VGA en la terminal
+- 🔊 Tema de sonidos de eventos **`Win2k`**: inicio, apagado, error, papelera
+- 🏞️ Fondos de pantalla de Windows 2000, incluido el azul clásico
+- 🧭 **Barra de tareas** con menú Inicio, acceso al Explorador, lista de ventanas, bandeja con red y volumen, y reloj
+- 🗂️ Iconos de escritorio: *Mi PC, Mis documentos, Papelera de reciclaje, Disco local (C:), Panel de control, Mis sitios de red*, enlazados a Thunar, la papelera y la configuración reales
+- ⌨️ **Símbolo del sistema**: bash con prompt `C:\Users\tú>`, el banner de Windows 2000 y xfce4-terminal en negro con fuente DOS
 
-- Arch Linux (or derivative) with **XFCE** installed (`sudo pacman -S --needed xfce4 xfce4-goodies`)
-- Optional, auto-installed if missing: `fontconfig`, `gtk-update-icon-cache`
-- For tray icons in the taskbar, install your tray apps (e.g. `network-manager-applet`)
-- A compositor is **not** required (the Win2k look disables compositing)
-- No `xfce4-panel-profiles` needed — the taskbar is built directly with `xfconf-query`
+<br/>
+
+## 🐧 Distros
+
+El instalador lee `/etc/os-release`, elige el gestor de paquetes y solo lo usa para tres o cuatro paquetes opcionales. Todo lo demás son archivos bajo `/usr/share` y ajustes de `xfconf`, idénticos en cualquier distro.
+
+| Distro | Gestor | Qué instala si falta |
+| --- | --- | --- |
+| Arch, Manjaro, EndeavourOS, Artix, CachyOS | `pacman` | `xfce4-pulseaudio-plugin`, `adwaita-icon-theme`, `fontconfig`, `gtk-update-icon-cache`, `network-manager-applet` |
+| Debian, Ubuntu, Linux Mint, Pop!_OS, Zorin, elementary | `apt` | `xfce4-pulseaudio-plugin`, `adwaita-icon-theme`, `fontconfig`, `gtk-update-icon-cache`, `network-manager-gnome` |
+| Fedora, Nobara, RHEL y derivadas | `dnf` | `xfce4-pulseaudio-plugin`, `adwaita-icon-theme`, `fontconfig`, `gtk-update-icon-cache`, `network-manager-applet` |
+| Void Linux | `xbps` | `xfce4-pulseaudio-plugin`, `adwaita-icon-theme`, `fontconfig`, `gtk-update-icon-cache`, `network-manager-applet` |
+| openSUSE Tumbleweed y Leap | `zypper` | `xfce4-panel-plugin-pulseaudio`, `adwaita-icon-theme`, `fontconfig`, `gtk3-tools`, `NetworkManager-applet` |
+
+El applet de red solo se instala si NetworkManager está en uso; si tu sistema usa otra cosa, no se te cuela nada. En una distro que no esté en la lista el tema se instala igual y solo se salta ese paso.
+
+<br/>
+
+## 📲 Instalación
+
+Necesitas XFCE ya instalado (el grupo `xfce4` de tu distro) y una sesión abierta en él.
+
+```bash
+git clone https://github.com/Chidaruma696/Win2k_undead.git
+cd Win2k_undead
+chmod +x install.sh uninstall.sh
+./install.sh
+```
+
+Ejecútalo con tu usuario normal. Pide `sudo` solo para dos cosas: instalar esos paquetes opcionales y copiar los recursos a `/usr/share`. El tema, la fuente y los iconos se aplican en vivo; cierra sesión y vuelve a entrar para que la barra de tareas y el prompt queden perfectos.
+
+| Opción | Efecto |
+| --- | --- |
+| `--no-deps` | No instala nada con el gestor de paquetes |
+| `--no-panel` | Conserva tu barra de tareas actual en vez de reemplazarla |
+| `--no-cmd` | Conserva tu terminal y tu prompt de bash |
+| `--help` | Muestra la ayuda |
+
+### Desinstalación
+
+```bash
+./uninstall.sh
+```
+
+Borra los recursos de `/usr/share`, los iconos de escritorio, el bloque de CSS y el del prompt, restaura la barra por defecto de XFCE y devuelve el tema a Adwaita. Solo elimina lo que este proyecto creó; los paquetes que instaló se quedan, porque son paquetes normales de tu distro. Tu configuración previa queda guardada en `~/.config/win2k_undead` por si quieres consultarla.
+
+<br/>
+
+## 🔧 Cómo funciona
+
+```
+Win2k_undead/
+├── install.sh           Detecta la distro, copia recursos a /usr/share y configura tu usuario
+├── uninstall.sh         Revierte todo lo anterior
+└── assets/
+    ├── themes/Win2K/     Tema GTK2 / GTK3 / xfwm4
+    ├── icons/            Win2k y Win2K_Cursor (tarballs, se extraen al instalar)
+    ├── fonts/            Fuentes de Windows
+    ├── sounds/Win2k/     Tema de sonidos
+    ├── backgrounds/      Fondos de pantalla
+    ├── panel/            Diseño de la barra de tareas (XML de xfconf)
+    ├── cmd/              terminalrc y el prompt C:\> para bash
+    ├── nolabel/          Variante Win2K_NoLabel
+    ├── xfconf/           XML de referencia de los canales de XFCE
+    └── gtk-menu.css      Estilo de menús que se fusiona con el tema
+```
+
+El instalador hace tres cosas, en este orden:
+
+1. **Dependencias opcionales** con el gestor de tu distro. Nada destructivo: solo el plugin de volumen, Adwaita como respaldo de iconos y, si aplica, el applet de red.
+2. **Recursos del sistema** bajo `/usr/share`: tema, iconos, cursores, fuentes, sonidos y fondos. Corrige de paso el `index.theme` de los iconos, que apuntaba a temas inexistentes y dejaba la bandeja llena de cuadros rotos.
+3. **Tu usuario**, sin `sudo`: escribe el XML de la barra de tareas con el panel y `xfconfd` parados para que nadie lo pise, aplica tema, fuente, cursor y sonidos con `xfconf-query`, crea los iconos de escritorio bilingües, añade a `~/.config/gtk-3.0/gtk.css` el bloque que arregla las etiquetas de iconos en XFCE 4.18 y 4.20, instala el look de `cmd` y reinicia `xfsettingsd` para que todo se vea al instante.
+
+Todo lo que toca en tu carpeta personal va entre marcadores (`>>> win2k_undead ... <<<`), así el desinstalador quita exactamente eso y deja el resto de tu `gtk.css` y tu `.bashrc` como estaban.
+
+<br/>
+
+## ❓ Notas
+
+- **¿Sin sonidos?** Configuración ▸ Apariencia ▸ Ajustes, tema de sonido `Win2k`, y sube el volumen de *Sonidos del sistema*.
+- **¿Iconos de bandeja en blanco?** Falta `adwaita-icon-theme`. El instalador avisa y te dice el comando exacto para tu distro.
+- **¿Etiquetas de iconos raras en 4.20?** El bloque de `gtk.css` fuerza la selección azul con texto blanco de Windows 2000. Puedes cambiar los colores ahí.
+- **¿Compositor?** No hace falta, y el look Win2k lo desactiva. Si lo quieres, actívalo en Ajustes del gestor de ventanas.
+- **¿Otra barra?** Instala con `--no-panel`. El XML de referencia queda en `assets/panel` por si quieres copiar solo partes.
+- **¿Void sin systemd?** Funciona: la detección de NetworkManager mira el proceso, no `systemctl`.
+
+<br/>
+
+## 🙏 Créditos y licencia
+
+- El arte y los sonidos son del proyecto **Win2k** de et0ndyy, construido sobre **Chicago95** de Grassmunk, AdrianoML y EMH-Mark-I.
+- Este fork solo reescribe el instalador para XFCE moderno y varias distros; los recursos visuales no cambian.
+- Licencia **[GPL-3.0](LICENSE)**, la misma del proyecto original. Las fuentes de Windows incluidas conservan sus propias condiciones.
+
+<br/>
+
+---
+
+<details>
+<summary><b>🇬🇧 English</b></summary>
+
+<br/>
+
+### What it is
+
+Win2k Undead turns an XFCE desktop into a convincing Windows 2000: GTK2/GTK3/xfwm4 window theme, icons, cursors, the Windows fonts with Tahoma as the UI font, event sounds, wallpapers, the classic taskbar with a Start menu, the usual desktop icons, and a terminal that looks like `cmd`. The original project did this with patched `.deb` packages and worked only on Debian/Mint with XFCE 4.12 to 4.16. This fork keeps the artwork and replaces the installer with one that is **appearance-only**, **update-safe** and **native to your distro**.
+
+### Supported distros
+
+The installer reads `/etc/os-release` and uses your package manager only for a few optional packages (the volume plugin, Adwaita as icon fallback, and the network applet if NetworkManager is in use). Everything else is plain files under `/usr/share` plus `xfconf` settings.
+
+| Distro | Manager |
+| --- | --- |
+| Arch, Manjaro, EndeavourOS, Artix, CachyOS | `pacman` |
+| Debian, Ubuntu, Linux Mint, Pop!_OS, Zorin, elementary | `apt` |
+| Fedora, Nobara, RHEL and derivatives | `dnf` |
+| Void Linux | `xbps` |
+| openSUSE Tumbleweed and Leap | `zypper` |
 
 ### Install
 
@@ -59,11 +191,7 @@ chmod +x install.sh uninstall.sh
 ./install.sh
 ```
 
-Then **log out and back in**. Run as your normal user — the script asks for
-`sudo` only to copy assets into `/usr/share`.
-
-Options: `--no-deps` (skip pacman), `--no-panel` (keep your current panel),
-`--no-cmd` (keep your normal terminal/prompt), `--help`.
+Run as your normal user; `sudo` is requested only to install the optional packages and to copy assets into `/usr/share`. Log out and back in afterwards. Options: `--no-deps`, `--no-panel`, `--no-cmd`, `--help`.
 
 ### Uninstall
 
@@ -71,125 +199,20 @@ Options: `--no-deps` (skip pacman), `--no-panel` (keep your current panel),
 ./uninstall.sh
 ```
 
-Removes the installed assets, the desktop icons and the user CSS fix, and resets
-the theme to defaults. It only deletes files this project created.
+Removes the assets, desktop icons, the CSS and prompt blocks, restores the stock XFCE panel and resets the theme to Adwaita. It only deletes what this project created.
 
-### Notes
+### Credits
 
-- **No event sounds?** Settings ▸ Appearance ▸ Settings → sound theme `Win2k`,
-  then raise the *System sounds* volume.
-- **Taskbar:** built directly with `xfconf-query` (no extra tools) — bottom panel
-  with Start menu, Explorer launcher, tasklist, notification tray and clock. It
-  *replaces* your current panel; keep yours with `./install.sh --no-panel`.
-- **Command Prompt look:** bash gets a `C:\>` prompt and xfce4-terminal a DOS
-  font (PxPlus IBM VGA) + black palette. Opt out with `./install.sh --no-cmd`.
-- **Tray icons** (network, volume…) use whatever the Win2k icon theme provides
-  for the standard icon names; the panel just gives them a home.
-- **Desktop-icon labels look wrong on 4.20?** The installer writes an
-  `XfdesktopIconView` block into `~/.config/gtk-3.0/gtk.css` to force the
-  classic blue-selection / white-text look. Edit the colours there if desired.
+Artwork and sounds belong to the **Win2k** project by et0ndyy, built on **Chicago95** by Grassmunk, AdrianoML and EMH-Mark-I. This fork only rewrites the installer. License: **GPL-3.0**, same as upstream.
 
----
+</details>
 
-## 🇪🇸 Español
+<br/>
 
-### Qué cambia respecto al original
+<div align="center">
 
-| `Win2k` original (Debian/Mint) | Win2k Undead (Arch) |
-| --- | --- |
-| `dpkg`/`apt` + ~1.8 GB de `.deb` incluidos | **Ninguno** — usa tus paquetes de Arch; solo trae los recursos visuales |
-| Sobrescribía `/usr/lib/os-release` y `/etc/lsb-release` | **No se tocan** — sobrevive a las actualizaciones |
-| Purgaba paquetes de Mint e instalaba `.deb` de sistema parcheados | **No purga ni reemplaza nada** |
-| Para XFCE 4.12–4.16 (*"4.18 no soportado"*) | **Compatible con XFCE 4.18 / 4.20** (se gestiona el cambio de render de iconos) |
-| `cmd`/`taskmgr` falsos, Wine, IE, WMP10, juegos, renombrados | **Eliminados** — solo apariencia |
-| Inglés / Griego | **Inglés / Español** (iconos de escritorio según tu idioma) |
+*It's now safe to turn off your computer.*
 
-### Qué incluye
+復活 · ふっかつ
 
-- Tema de ventanas GTK3 + GTK2 + xfwm4 **`Win2K`** (y la variante **`Win2K_NoLabel`**)
-- Tema de iconos **`Win2k`** y de cursores **`Win2K_Cursor`**
-- Fuentes de Windows (fuente de interfaz = **Tahoma 9**)
-- Tema de sonidos de eventos **`Win2k`**
-- Fondos de Windows 2000
-- Distribución de panel clásica con **menú Inicio + barra de tareas**
-- Iconos de escritorio: *Mi PC, Mis documentos, Papelera de reciclaje,
-  Disco local (C:), Panel de control, Mis sitios de red* — enlazados a
-  destinos nativos (Thunar, papelera, etc.)
-
-### Requisitos
-
-- Arch Linux (o derivada) con **XFCE** instalado (`sudo pacman -S --needed xfce4 xfce4-goodies`)
-- Opcionales, se instalan solos si faltan: `fontconfig`, `gtk-update-icon-cache`
-- Para los iconos de la bandeja, instala tus apps de bandeja (p. ej. `network-manager-applet`)
-- **No** hace falta compositor (el look Win2k desactiva el compositing)
-- **No** necesita `xfce4-panel-profiles` — la barra se crea directo con `xfconf-query`
-
-### Instalación
-
-```bash
-git clone https://github.com/Chidaruma696/Win2k_undead.git
-cd Win2k_undead
-chmod +x install.sh uninstall.sh
-./install.sh
-```
-
-Después **cierra sesión y vuelve a entrar**. Ejecútalo como tu usuario normal —
-el script pide `sudo` solo para copiar los recursos a `/usr/share`.
-
-Opciones: `--no-deps` (omite pacman), `--no-panel` (conserva tu panel actual),
-`--no-cmd` (conserva tu terminal/prompt normal), `--help`.
-
-### Desinstalación
-
-```bash
-./uninstall.sh
-```
-
-Quita los recursos instalados, los iconos de escritorio y el arreglo de CSS, y
-restablece el tema por defecto. Solo borra lo que este proyecto creó.
-
-### Notas
-
-- **¿Sin sonidos de eventos?** Configuración ▸ Apariencia ▸ Ajustes → tema de
-  sonido `Win2k`, y sube el volumen de *Sonidos del sistema*.
-- **Barra de tareas:** se crea directo con `xfconf-query` (sin herramientas extra):
-  panel inferior con menú Inicio, lanzador de Explorer, lista de tareas, bandeja
-  y reloj. *Reemplaza* tu panel actual; consérvalo con `./install.sh --no-panel`.
-- **Look de cmd:** bash recibe un prompt `C:\>` y xfce4-terminal una fuente DOS
-  (PxPlus IBM VGA) + paleta negra. Desactívalo con `./install.sh --no-cmd`.
-- **Iconos de bandeja** (red, volumen…) usan lo que provea el tema de iconos
-  Win2k para los nombres estándar; el panel solo les da un sitio.
-- **¿Etiquetas de iconos raras en 4.20?** El instalador añade un bloque
-  `XfdesktopIconView` a `~/.config/gtk-3.0/gtk.css` para forzar el look clásico
-  (selección azul / texto blanco). Cambia ahí los colores si quieres.
-
----
-
-## Layout
-
-```
-Win2k_undead/
-├── install.sh           Arch installer (system assets + per-user config)
-├── uninstall.sh         Clean revert
-├── README.md            This file
-├── LICENSE              GPL-3.0
-└── assets/
-    ├── themes/Win2K/     GTK2/GTK3/xfwm4 window theme
-    ├── icons/            Win2k + Win2K_Cursor (tarballs, extracted on install)
-    ├── fonts/            Windows fonts (Tahoma is the UI font)
-    ├── sounds/Win2k/     Event sound theme
-    ├── backgrounds/      Wallpapers
-    ├── cmd/              Command Prompt look (terminalrc + bash C:\> prompt)
-    ├── panel/            reference panel profile (taskbar is built via xfconf)
-    ├── xfconf/           Reference XFCE channel XML (not blindly applied)
-    ├── nolabel/          Assets for the Win2K_NoLabel variant
-    └── gtk-menu.css      Menu styling merged into the theme
-```
-
-## Credits & License
-
-- Visual assets: **Win2k** project, built on **Chicago95** by Grassmunk,
-  AdrianoML and EMH-Mark-I.
-- License: **[GPL-3.0+](LICENSE) / MIT** (same as upstream).
-- This fork only rewrites the installer/packaging for Arch + modern XFCE; the
-  artwork is unchanged.
+</div>

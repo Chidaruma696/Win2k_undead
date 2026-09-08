@@ -2,7 +2,7 @@
 #
 # Win2k Undead :: uninstaller
 # Reverts everything install.sh creates. Touches ONLY files this project
-# installed; never removes pacman-managed packages or default XFCE assets.
+# installed; never removes distro packages or default XFCE assets.
 
 set -euo pipefail
 
