@@ -22,6 +22,8 @@
 
 *Solo apariencia · sin paquetes empaquetados · sobrevive a las actualizaciones · se desinstala limpio*
 
+*Probado en Arch; en las demás distros el instalador está por confirmar.*
+
 <br/>
 
 <img src="d12.png" width="720" alt="Escritorio Win2k Undead" />

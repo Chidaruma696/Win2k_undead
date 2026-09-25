@@ -22,6 +22,8 @@
 
 *Appearance only · no bundled packages · survives system updates · uninstalls cleanly*
 
+*Tested on Arch; on the other distros the installer is still to be confirmed.*
+
 <br/>
 
 <img src="d12.png" width="720" alt="Win2k Undead desktop" />
